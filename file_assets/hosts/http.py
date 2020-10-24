@@ -1,7 +1,9 @@
+from file_assets.auth import UsernamePassword
 from io import SEEK_END, SEEK_SET, BytesIO
 from typing import Optional
 
 import requests
+from requests.auth import HTTPBasicAuth
 from file_assets import exceptions
 from file_assets.base import Host, Path, Url
 
@@ -70,16 +72,20 @@ class HttpHost(Host):
 
     verify_ssl = True
 
-    def __init__(self, hostname: str, port: str = None, username: str = None, password: str = None):
+    def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None):
         self.hostname = hostname
         self.port = port
-        self.username = username
-        self.password = password
+        self.auth = auth
 
     def get_url(self, path: "Path"):
-        return f"{self.scheme}://{self.hostname}{':'+ self.port if self.port else ''}/{'/'.join(path.path_elements)}"
+        return (
+            f"{self.scheme}://{self.hostname}{':'+ str(self.port) if self.port else ''}/{'/'.join(path.path_elements)}"
+        )
 
     def _open(self, path: "Path"):
+        kw = {}
+        if self.auth:
+            kw["auth"] = HTTPBasicAuth(self.auth.username, self.auth.password)
         r = requests.get(self.get_url(path), stream=True, verify=self.verify_ssl)
         if r.status_code != 200:
             raise exceptions.FileNotAccessable
@@ -88,10 +94,7 @@ class HttpHost(Host):
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return (
-            cls(parsed_url.host, parsed_url.port, username=parsed_url.username, password=parsed_url.password)
-            / parsed_url.path
-        )
+        return cls(parsed_url.host, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
 
 
 class HttpsHost(HttpHost):
@@ -114,6 +117,6 @@ class HttpsHost(HttpHost):
 
     scheme = "https"
 
-    def __init__(self, hostname: str, port: str = None, username: str = None, password: str = None, verify_ssl=False):
-        super().__init__(hostname, port, username, password)
+    def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None, verify_ssl=False):
+        super().__init__(hostname, port, auth)
         self.verify_ssl = verify_ssl

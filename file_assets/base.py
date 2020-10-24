@@ -107,13 +107,12 @@ class Host(abc.ABC):
         Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
         """
         parsed_url = parse_url(url_str)
-        username, password = None, None
+        auth = None
         if parsed_url.auth:
-            username, password = parsed_url.auth.split(":")
+            auth = UsernamePassword(*parsed_url.auth.split(":"))
         url = Url(
             parsed_url.scheme,
-            username,
-            password,
+            auth,
             parsed_url.host,
             parsed_url.port,
             parsed_url.path,

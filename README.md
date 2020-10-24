@@ -138,6 +138,8 @@ The ssl certificate of sites will be checked unless you disable it.
 You can also specify an optional username and password for basic authentication.
 Later on, we will add other authentication providers, like certificate or (Authroization) header.
 
+    >>> path = file_assets.hosts.http.HttpsHost("nu.nl", auth=file_assets.auth.UsernamePassword("name", "secret")) / "robots.txt"
+
 
 ### FTP(S)
 
@@ -147,18 +149,18 @@ You can access ftp(s) sites:
     >>> "</div></body></html>" in path.read_text()
     True
 
-    >>> path = file_assets.hosts.ftp.FTPHost("test.rebex.net", username="demo", password="password") / "pub" / "example" / "readme.txt"
+    >>> path = file_assets.hosts.ftp.FTPHost("test.rebex.net", auth=file_assets.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
     >>> "Welcome" in path.read_text()
     True
 
-    >>> path = file_assets.hosts.ftp.FTPSHost("test.rebex.net", port=990, username="demo", password="password") / "pub" / "example" / "readme.txt"
+    >>> path = file_assets.hosts.ftp.FTPSHost("test.rebex.net", port=990, auth=file_assets.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
     >>> "Welcome" in path.read_text()
     True
 
 
 ### SFTP
 
-    >>> path = file_assets.hosts.sftp.SFTPHost("test.rebex.net", username="demo", password="password", auto_add_host_key=True) / "pub" / "example" / "readme.txt"
+    >>> path = file_assets.hosts.sftp.SFTPHost("test.rebex.net", auth=file_assets.auth.UsernamePassword("demo", "password"), auto_add_host_key=True) / "pub" / "example" / "readme.txt"
 
     #>>> "Welcome" in path.read_text()
     #True
@@ -166,7 +168,11 @@ You can access ftp(s) sites:
 
 ### SMB
 
+TODO
+
 ### S3
+
+TODO
 
 ### Package
 

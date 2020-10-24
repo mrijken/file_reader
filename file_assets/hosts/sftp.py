@@ -1,3 +1,4 @@
+from file_assets.auth import UsernamePassword
 import socket
 from typing import Optional
 
@@ -19,17 +20,11 @@ class SFTPHost(Host):
     def __init__(
         self,
         hostname: str,
-        username: Optional[str] = None,
-        password: Optional[str] = None,
-        pkey: Optional[str] = None,
-        key_filename: Optional[str] = None,
+        auth: Optional[UsernamePassword] = None,
         auto_add_host_key=False,
     ):
         self.hostname = hostname
-        self.username = username
-        self.password = password
-        self.pkey = pkey
-        self.key_filename = key_filename
+        self.auth = auth
         self.auto_add_host_key = auto_add_host_key
         self.ssh_client: Optional[paramiko.SSHClient] = None
         self.sftp_client: Optional[paramiko.SFTPClient] = None
@@ -42,8 +37,8 @@ class SFTPHost(Host):
         try:
             self.ssh_client.connect(
                 hostname=self.hostname,
-                username=self.username,
-                password=self.password,  # pkey=pkey, key_filename=key_filename
+                username=self.auth.username if self.auth else None,
+                password=self.auth.password if self.auth else None,  # pkey=pkey, key_filename=key_filename
             )
         except (paramiko.BadHostKeyException, paramiko.AuthenticationException, paramiko.SSHException, socket.error):
             raise exceptions.NoHostConnection
