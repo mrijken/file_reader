@@ -1,5 +1,5 @@
 class Auth:
-    ...
+    pass
 
 
 class UsernamePassword(Auth):

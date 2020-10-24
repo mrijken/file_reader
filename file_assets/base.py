@@ -1,19 +1,18 @@
 import abc
 import dataclasses
-from file_assets.auth import UsernamePassword
 from typing import IO, List, Optional, Type, TypeVar, overload
 
 from typing_extensions import Literal
 from urllib3.util import parse_url
 
-T = TypeVar("T")
+from file_assets.auth import UsernamePassword
 
 
 @dataclasses.dataclass
 class Url:
     scheme: str
     auth: Optional[UsernamePassword]
-    host: str
+    hostname: str
     port: Optional[int]
     path: str
     query: Optional[str]
@@ -61,11 +60,14 @@ class Path:
         self.host = host
         self.path_elements = path_elements or []
 
+    def __str__(self):
+        return "/".join(self.path_elements)
+
     def __truediv__(self, other: str) -> "Path":
         return self.__class__(self.host, self.path_elements + [other])
 
     def __repr__(self) -> str:
-        return f"Path({self.host}, {'/'.join(self.path_elements)})"
+        return f"Path({self.host}, {str(self)})"
 
     def read_text(self, chunk_size: int = -1, file: FileObject = None) -> str:
         return self.host.read_text(self, chunk_size, file=file)
@@ -101,7 +103,7 @@ class Host(abc.ABC):
     path_cls = Path
 
     @classmethod
-    def from_url(cls: Type["Host"], url_str: str) -> Path:
+    def from_url(cls, url_str: str) -> Path:
         """
         >>> Host.from_url("ftp://ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
         Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
@@ -113,7 +115,7 @@ class Host(abc.ABC):
         url = Url(
             parsed_url.scheme,
             auth,
-            parsed_url.host,
+            parsed_url.hostname,
             parsed_url.port,
             parsed_url.path,
             parsed_url.query,
@@ -127,7 +129,8 @@ class Host(abc.ABC):
         raise ValueError(f"scheme {parsed_url.scheme} is not known")
 
     @classmethod
-    def from_parsed_url(cls: Type[T], parsed_url: Url) -> "Path":
+    @abc.abstractmethod
+    def from_parsed_url(cls: Type["Host"], parsed_url: Url) -> "Path":
         ...
 
     def __truediv__(self, other: str) -> Path:

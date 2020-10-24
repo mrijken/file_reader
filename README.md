@@ -168,11 +168,17 @@ You can access ftp(s) sites:
 
 ### SMB
 
-TODO
+    >>> path = file_assets.hosts.smb.SmbHost("localhost") / "pub" / "example" / "readme.txt"
 
 ### S3
 
-TODO
+    >>> path = file_assets.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
+
+
+### HDFS
+
+    >>> path = file_assets.hosts.hdfs.HdfsHost("localhost") / "pub" / "example" / "readme.txt"
+
 
 ### Package
 

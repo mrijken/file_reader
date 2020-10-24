@@ -39,16 +39,16 @@ class FTPHost(Host):
     def connect(self):
         try:
             self.connection = ftplib.FTP(self.hostname)
-        except socket.gaierror:
-            raise exceptions.NoHostConnection()
-        kw: Dict[str, Any] = {}
+        except socket.gaierror as exc:
+            raise exceptions.NoHostConnection() from exc
+        kwargs: Dict[str, Any] = {}
         if self.auth:
-            kw.update(user=self.auth.username, passwd=self.auth.password)
-        self.connection.login(**kw)
+            kwargs.update(user=self.auth.username, passwd=self.auth.password)
+        self.connection.login(**kwargs)
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.host, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
+        return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
 
     def _open(self, path: "Path"):
         if not self.connection:
@@ -63,8 +63,8 @@ class FTPHost(Host):
 
         try:
             self.connection.retrbinary("RETR " + path.path_elements[-1], mem_file.write)
-        except ftplib.error_perm:
-            raise exceptions.FileNotAccessable()
+        except ftplib.error_perm as exc:
+            raise exceptions.FileNotAccessable() from exc
 
         mem_file.seek(0)
 

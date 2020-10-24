@@ -1,6 +1,6 @@
 import pathlib
 
-from file_assets.base import Host, Path
+from file_assets.base import Host, Path, Url
 
 
 class SystemHost(Host):
@@ -44,6 +44,10 @@ class SystemHost(Host):
             self.cwd = pathlib.Path("~").expanduser()
         elif root:
             self.cwd = pathlib.Path("/")
+
+    @classmethod
+    def from_parsed_url(cls, parsed_url: Url) -> Path:
+        return cls(parsed_url.hostname) / parsed_url.path
 
     def _get_path(self, path: Path) -> pathlib.Path:
         current_path = self.cwd

@@ -1,6 +1,7 @@
 import pathlib
 
 import pkg_resources
+
 from file_assets import exceptions
 from file_assets.base import Host, Path, Url
 
@@ -21,7 +22,7 @@ class PythonPackage(Host):
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.host) / parsed_url.path
+        return cls(parsed_url.hostname) / parsed_url.path
 
     def _get_path(self, path: Path) -> pathlib.Path:
         prov = pkg_resources.get_provider(self.package_name)

@@ -1,14 +1,15 @@
-from file_assets.auth import UsernamePassword
 from io import SEEK_END, SEEK_SET, BytesIO
-from typing import Optional
+from typing import Any, Dict, Optional
 
 import requests
 from requests.auth import HTTPBasicAuth
+
 from file_assets import exceptions
+from file_assets.auth import UsernamePassword
 from file_assets.base import Host, Path, Url
 
 
-class ResponseStream(object):
+class ResponseStream:
     def __init__(self, request_iterator):
         self._bytes = BytesIO()
         self._iterator = request_iterator
@@ -83,18 +84,18 @@ class HttpHost(Host):
         )
 
     def _open(self, path: "Path"):
-        kw = {}
+        kwargs: Dict[str, Any] = {}
         if self.auth:
-            kw["auth"] = HTTPBasicAuth(self.auth.username, self.auth.password)
-        r = requests.get(self.get_url(path), stream=True, verify=self.verify_ssl)
-        if r.status_code != 200:
+            kwargs["auth"] = HTTPBasicAuth(self.auth.username, self.auth.password)
+        response = requests.get(self.get_url(path), stream=True, verify=self.verify_ssl, **kwargs)
+        if response.status_code != 200:
             raise exceptions.FileNotAccessable
 
-        return ResponseStream(r.iter_content(1000))
+        return ResponseStream(response.iter_content(1000))
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.host, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
+        return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
 
 
 class HttpsHost(HttpHost):

@@ -1,17 +1,16 @@
-from file_assets.auth import UsernamePassword
 import socket
 from typing import Optional
 
 try:
     import paramiko
 
-    ssh_activated = True
+    SSH_ACTIVATED = True
 except ImportError:
-    ssh_activated = False
-
+    SSH_ACTIVATED = False
 
 from file_assets import exceptions
-from file_assets.base import Host, Path
+from file_assets.auth import UsernamePassword
+from file_assets.base import Host, Path, Url
 
 
 class SFTPHost(Host):
@@ -23,11 +22,18 @@ class SFTPHost(Host):
         auth: Optional[UsernamePassword] = None,
         auto_add_host_key=False,
     ):
+        if not SSH_ACTIVATED:
+            raise ValueError("SFTP is not available. Install met extras sftp.")
+
         self.hostname = hostname
         self.auth = auth
         self.auto_add_host_key = auto_add_host_key
         self.ssh_client: Optional[paramiko.SSHClient] = None
         self.sftp_client: Optional[paramiko.SFTPClient] = None
+
+    @classmethod
+    def from_parsed_url(cls, parsed_url: Url) -> Path:
+        return cls(parsed_url.hostname, auth=parsed_url.auth) / parsed_url.path
 
     def connect(self):
         self.ssh_client = paramiko.SSHClient()
@@ -40,8 +46,13 @@ class SFTPHost(Host):
                 username=self.auth.username if self.auth else None,
                 password=self.auth.password if self.auth else None,  # pkey=pkey, key_filename=key_filename
             )
-        except (paramiko.BadHostKeyException, paramiko.AuthenticationException, paramiko.SSHException, socket.error):
-            raise exceptions.NoHostConnection
+        except (
+            paramiko.BadHostKeyException,
+            paramiko.AuthenticationException,
+            paramiko.SSHException,
+            socket.error,
+        ) as exc:
+            raise exceptions.NoHostConnection from exc
         self.sftp_client = self.ssh_client.open_sftp()
 
     def _open(self, path: Path):
