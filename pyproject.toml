@@ -1,0 +1,49 @@
+[tool.poetry]
+name = "file_assets"
+version = "0.1.0"
+description = ""
+authors = ["Marc Rijken <marc@rijken.org>"]
+
+[tool.poetry.dependencies]
+python = "^3.7"
+boto3 = {version = "^1.16.0", optional = true}
+smbprotocol = {version = "^1.2.0", optional = true}
+paramiko = {version = "^2.7.2", optional = true}
+requests = "^2.24.0"
+
+[tool.poetry.dev-dependencies]
+black = "^20.8b1"
+pylint = "^2.6.0"
+pytest-cov = "^2.10.1"
+mypy = "^0.782"
+vulture = "^2.1"
+isort = "^5.6.4"
+
+[tool.poetry.extras]
+s3 = ["boto3"]
+samba = ["smbprotocol"]
+sftp = ["paramiko"]
+ssh = ["paramiko"]
+
+
+[tool.isort]
+profile = "black"
+line_length = 120
+known_third_party = ["file_assets"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "--doctest-modules --doctest-glob=\"*.md\""
+testpaths = [
+    "."
+]
+
+[tool.vulture]
+exclude = [".eggs", ".git", ".*cache", ".tox"]
+make_whitelist = true
+min_confidence = 80
+sort_by_size = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
