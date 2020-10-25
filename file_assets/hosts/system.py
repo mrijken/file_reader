@@ -15,14 +15,15 @@ class SystemHost(Host):
 
     >>> p = SystemHost() / "pyproject.toml"
     >>> with p.open('t') as f:
-    ...     first_read = f.read(4)
-    ...     second_read = f.read(1)
-    >>> isinstance(first_read, str)
-    True
-    >>> first_read == '[too'
-    True
-    >>> second_read == 'l'
-    True
+    ...     f.read(4)
+    ...     f.tell()
+    ...     f.seek(0)
+    ...     f.tell()
+    ...     f.read(4)
+    '[too'
+    4
+    0
+    '[too'
 
     >>> with p.open('b') as f:
     ...     first_read = f.read(4)

@@ -18,6 +18,16 @@ class FTPHost(Host):
     >>> b"</div></body></html>" in p.read_bytes()
     True
 
+    >>> with p.open('t') as f:
+    ...     f.read(4)
+    ...     f.tell()
+    ...     f.seek(0)
+    ...     f.tell()
+    ...     f.read(4)
+    '\n</d'
+    4
+    0
+    '\n</d'
 
     >>> p = FTPHost.from_url("ftp://ftp.nluug.nl/wrong_file")
     >>> with pytest.raises(exceptions.FileNotAccessable):
@@ -50,7 +60,7 @@ class FTPHost(Host):
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
 
-    def _open(self, path: "Path"):
+    def _open(self, path: Path):
         if not self.connection:
             self.connect()
 

@@ -38,6 +38,15 @@ class FileObject:
             self.pointer.close()
         self.pointer = None
 
+    def tell(self):
+        if self.pointer:
+            return self.pointer.tell()
+        return -1
+
+    def seek(self, offset: int, whence: int = None):
+        if self.pointer:
+            self.pointer.seek(offset)
+
 
 class Bytes(FileObject):
     mode = "b"
@@ -97,7 +106,6 @@ class Host(abc.ABC):
     subclasses: List[Type["Host"]] = []
 
     def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
         cls.subclasses.append(cls)
 
     path_cls = Path

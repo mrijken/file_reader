@@ -60,13 +60,15 @@ class HttpHost(Host):
     >>> b"<html" in p.read_bytes()
     True
     >>> with p.open('t') as f:
-    ...     first_read = f.read(4)
-    ...     second_read = f.read(4)
-    >>> first_read == '\\n<!D'
-    True
-    >>> second_read  == 'OCTY'
-    True
-
+    ...     f.read(4)
+    ...     f.tell()
+    ...     f.seek(0)
+    ...     f.tell()
+    ...     f.read(4)
+    '\\n<!D'
+    4
+    0
+    '\\n<!D'
     """
 
     scheme = "http"

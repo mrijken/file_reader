@@ -13,6 +13,18 @@ class PythonPackage(Host):
     True
     >>> b"__version__" in p.read_bytes()
     True
+
+    >>> with p.open('t') as f:
+    ...     f.read(4)
+    ...     f.tell()
+    ...     f.seek(0)
+    ...     f.tell()
+    ...     f.read(4)
+    '# Th'
+    4
+    0
+    '# Th'
+
     """
 
     scheme = "package"
