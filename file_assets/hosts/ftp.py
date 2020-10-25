@@ -24,10 +24,10 @@ class FTPHost(Host):
     ...     f.seek(0)
     ...     f.tell()
     ...     f.read(4)
-    '\n</d'
+    '\\n</d'
     4
     0
-    '\n</d'
+    '\\n</d'
 
     >>> p = FTPHost.from_url("ftp://ftp.nluug.nl/wrong_file")
     >>> with pytest.raises(exceptions.FileNotAccessable):
