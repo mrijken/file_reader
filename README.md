@@ -1,6 +1,6 @@
 # file_reader
 
-![CI](https://github.com/mrijken/file_reader/workflows/CI/badge.svg)
+![Build](https://github.com/mrijken/file_reader/workflows/CI/badge.svg)
 
 ## Read almost all files from almost anywhere with one API
 
