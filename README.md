@@ -28,7 +28,7 @@ To read a file, you have to instantiate a host (like FTPHost) and get a path fro
     
     or
 
-    >>> path = host.get_path("pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+    >>> path = host.get_path("/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
 
     >>> path
     Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)

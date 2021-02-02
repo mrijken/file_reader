@@ -1,5 +1,6 @@
 import abc
 import dataclasses
+import importlib
 from io import BytesIO, StringIO
 from typing import Dict, IO, Iterable, List, Optional, Tuple, Type, TypeVar, Union, overload, Protocol
 
@@ -81,6 +82,9 @@ class Path:
         """
         return "/".join(self._path_elements)
 
+    def _load_plugins(self):
+        importlib.import_module("file_reader.archive")
+
     def __truediv__(self, other: str) -> "Path":
         """
         Get a new Path with a child of Path
@@ -99,6 +103,7 @@ class Path:
         path = self.__class__(self._root, self.path_elements + (other,))
 
         if "." in other:
+            self._load_plugins()
             archive_cls = Archive.get_archive_cls_for_filename(other)
             if archive_cls:
                 return Path(archive_cls(path))
