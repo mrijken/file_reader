@@ -10,6 +10,7 @@ Uniform file reader for a lot of different file storages, like
 - smb
 - sftp
 
+Import dependencies for doctest
 
     >>> import file_reader
     >>> import pytest
