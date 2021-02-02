@@ -5,14 +5,14 @@ try:
 except ImportError:
     SMB_ACTIVATED = False
 
-from typing import Optional
+from typing import IO, Optional
 
-from file_assets.auth import UsernamePassword
-from file_assets.base import Host, Path, Url
+from file_reader.auth import UsernamePassword
+from file_reader.base import Host, Path, Url
 
 
 class SmbHost(Host):
-    scheme = "smb"
+    _scheme = "smb"
 
     def __init__(self, hostname: str, auth: Optional[UsernamePassword] = None):
         if not SMB_ACTIVATED:
@@ -28,5 +28,5 @@ class SmbHost(Host):
     def connect(self):
         smbclient.ClientConfig(username=self.auth.username, password=self.auth.password)
 
-    def _open(self, path: Path):
+    def _open(self, path: Path) -> IO[bytes]:
         return smbclient.open_file("\\\\\\" + self.hostname + str(path).replace("/", "\\\\"), mode="w")

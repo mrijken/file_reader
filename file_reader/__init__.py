@@ -1,14 +1,14 @@
 # class HadoopHost(Host):
-#     scheme = "hdfs"
+#     _scheme = "hdfs"
 
 
 # class GitHost(Host):
-#     scheme = "git"
+#     _scheme = "git"
 
 
 # class AFPHost(Host):
-#     scheme = "afp"
+#     _scheme = "afp"
 
 
 # class NFSPHost(Host):
-#     scheme = "nfs"
+#     _scheme = "nfs"

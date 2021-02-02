@@ -1,9 +1,10 @@
 import pathlib
+from typing import IO
 
 import pkg_resources
 
-from file_assets import exceptions
-from file_assets.base import Host, Path, Url
+from file_reader import exceptions
+from file_reader.base import Host, Path, Url
 
 
 class PythonPackage(Host):
@@ -14,20 +15,9 @@ class PythonPackage(Host):
     >>> b"__version__" in p.read_bytes()
     True
 
-    >>> with p.open('t') as f:
-    ...     f.read(4)
-    ...     f.tell()
-    ...     f.seek(0)
-    ...     f.tell()
-    ...     f.read(4)
-    '# Th'
-    4
-    0
-    '# Th'
-
     """
 
-    scheme = "package"
+    _scheme = "package"
 
     def __init__(self, package_name: str) -> None:
         self.package_name = package_name
@@ -42,5 +32,5 @@ class PythonPackage(Host):
             raise exceptions.FileNotAccessable
         return pathlib.Path(pkg_resources.resource_filename(self.package_name, "/".join(path.path_elements)))
 
-    def _open(self, path: "Path"):
+    def _open(self, path: "Path") -> IO[bytes]:
         return self._get_path(path).open("rb")

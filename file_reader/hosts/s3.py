@@ -5,12 +5,13 @@ try:
 except ImportError:
     S3_ACTIVATED = False
 
-from file_assets import exceptions
-from file_assets.base import Host, Path, Url
+from typing import IO
+from file_reader import exceptions
+from file_reader.base import Host, Path, Url
 
 
 class S3Host(Host):
-    scheme = "s3"
+    _scheme = "s3"
 
     def __init__(self, aws_access_key_id: str, aws_secret_access_key: str, region_name: str):
         if not S3_ACTIVATED:
@@ -32,7 +33,7 @@ class S3Host(Host):
         self.session = self.session.resource("s3")
         self.client = self.session.client("s3")
 
-    def _open(self, path: Path):
+    def _open(self, path: Path) -> IO[bytes]:
         if not self.client:
             self.connect()
 

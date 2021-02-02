@@ -1,11 +1,11 @@
 import ftplib
 import socket
 from io import BytesIO
-from typing import Any, Dict, Optional
+from typing import Any, Dict, IO, Optional
 
-from file_assets import exceptions
-from file_assets.auth import UsernamePassword
-from file_assets.base import Host, Path, Url
+from file_reader import exceptions
+from file_reader.auth import UsernamePassword
+from file_reader.base import Host, Path, Url
 
 
 class FTPHost(Host):
@@ -18,27 +18,16 @@ class FTPHost(Host):
     >>> b"</div></body></html>" in p.read_bytes()
     True
 
-    >>> with p.open('t') as f:
-    ...     f.read(4)
-    ...     f.tell()
-    ...     f.seek(0)
-    ...     f.tell()
-    ...     f.read(4)
-    '\\n</d'
-    4
-    0
-    '\\n</d'
-
     >>> p = FTPHost.from_url("ftp://ftp.nluug.nl/wrong_file")
     >>> with pytest.raises(exceptions.FileNotAccessable):
     ...     p.read_text()
 
     >>> p = FTPHost.from_url("ftp://ftp.wrong_host.nl/readme")
     >>> with pytest.raises(exceptions.NoHostConnection):
-    ...     p.host.connect()
+    ...     p.read_text()
     """
 
-    scheme = "ftp"
+    _scheme = "ftp"
 
     def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None) -> None:
         self.hostname = hostname
@@ -60,7 +49,7 @@ class FTPHost(Host):
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
 
-    def _open(self, path: Path):
+    def _open(self, path: Path) -> IO[bytes]:
         if not self.connection:
             self.connect()
 
@@ -86,4 +75,4 @@ class FTPHost(Host):
 
 
 class FTPSHost(FTPHost):
-    scheme = "ftps"
+    _scheme = "ftps"

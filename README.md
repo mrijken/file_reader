@@ -1,4 +1,4 @@
-# file_assets
+# file_reader
 
 ## Read almost all files from almost anywhere with one API
 
@@ -11,7 +11,7 @@ Uniform file reader for a lot of different file storages, like
 - sftp
 
 
-    >>> import file_assets
+    >>> import file_reader
     >>> import pytest
 
 ## Usage
@@ -19,7 +19,7 @@ Uniform file reader for a lot of different file storages, like
 
 ### Construct a Host and a Path
 
-    >>> path = file_assets.hosts.ftp.FTPHost('ftp.nluug.nl') / 'pub' / 'os' / 'Linux' / 'distr' / 'ubuntu-releases' / 'FOOTER.html'
+    >>> path = file_reader.hosts.ftp.FTPHost('ftp.nluug.nl') / 'pub' / 'os' / 'Linux' / 'distr' / 'ubuntu-releases' / 'FOOTER.html'
     >>> path
     Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
 
@@ -31,34 +31,24 @@ Use it as a regular file object:
 
     >>> with path.open() as f:
     ...     f.read()
-    '\n</div></body></html>\n'
-
-    >>> f = path.open()
-    >>> f.read()
-    '\n</div></body></html>\n'
-    >>> f.close()
-
-- in text (default) or binary mode
+    b'\n</div></body></html>\n'
 
     >>> with path.open('b') as f:
     ...     f.read()
     b'\n</div></body></html>\n'
 
-- with a specified size
+    >>> with path.open('t') as f:
+    ...     f.read()
+    '\n</div></body></html>\n'
 
-    >>> with path.open('b') as f:
-    ...     f.read(3)
-    b'\n</'
-    >>> f.close()
-
-### Access the contents direct
+### Access the contents directly
 
 Read the content direct from the path as text:
 
     >>> path.read_text()
     '\n</div></body></html>\n'
 
-    >>> path.read_text(3)
+    >>> path.read_text()[:3]
     '\n</'
 
 or as binary:
@@ -66,20 +56,20 @@ or as binary:
     >>> path.read_bytes()
     b'\n</div></body></html>\n'
 
-    >>> path.read_bytes(3)
+    >>> path.read_bytes()[:3]
     b'\n</'
 
 ### Create a Path from an url
 
 You can construct a Host and Path by parsing an url, like:
 
-    >>> file_assets.base.Host.from_url("ftp://marc:secret@ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+    >>> file_reader.base.Host.from_url("ftp://marc:secret@ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
     Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
 
-    >>> file_assets.base.Host.from_url("http://marc:secret@nu.nl/robots.txt")
+    >>> file_reader.base.Host.from_url("http://marc:secret@nu.nl/robots.txt")
     Path(Host(http), /robots.txt)
 
-    >>> file_assets.base.Host.from_url("package://file_assets/__init__.py")
+    >>> file_reader.base.Host.from_url("package://file_reader/__init__.py")
     Path(Host(package), /__init__.py)
 
 ## Possible hosts
@@ -94,17 +84,17 @@ It will use the credentials of the user who is running the python process.
 
 You can use a path relative to the working directory
 
-    >>> file_assets.hosts.system.SystemHost() / "file_assets" / "__init__.py"
-    Path(Host(file, cwd=.), /file_assets/__init__.py)
+    >>> file_reader.hosts.system.SystemHost() / "file_reader" / "__init__.py"
+    Path(Host(file, cwd=.), /file_reader/__init__.py)
 
 A path relative to the home dir of the current user can be used
 
-    >>> file_assets.hosts.system.SystemHost(home_dir=True) / ".ssh" / "id_rsa.pub"
+    >>> file_reader.hosts.system.SystemHost(home_dir=True) / ".ssh" / "id_rsa.pub"
     Path(Host(file, cwd=/home/...), /.ssh/id_rsa.pub)
 
 Or an absolute path can be used:
 
-    >>> file_assets.hosts.system.SystemHost(root=True) / "etc" / "hosts"
+    >>> file_reader.hosts.system.SystemHost(root=True) / "etc" / "hosts"
     Path(Host(file, cwd=/), /etc/hosts)
 
 
@@ -112,13 +102,13 @@ Or an absolute path can be used:
 
 Via the GET method a file from a HTTP(S) location will be get.
 
-    >>> path = file_assets.hosts.http.HttpHost("nu.nl") / "robots.txt"
+    >>> path = file_reader.hosts.http.HttpHost("nu.nl") / "robots.txt"
     >>> path
     Path(Host(http), /robots.txt)
     >>> "User-agent" in path.read_text()
     True
 
-    >>> path = file_assets.hosts.http.HttpsHost("nu.nl") / "robots.txt"
+    >>> path = file_reader.hosts.http.HttpsHost("nu.nl") / "robots.txt"
     >>> path
     Path(Host(https), /robots.txt)
     >>> "User-agent" in path.read_text()
@@ -126,68 +116,80 @@ Via the GET method a file from a HTTP(S) location will be get.
 
 The ssl certificate of sites will be checked unless you disable it.
 
-    >>> path = file_assets.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=True).root_path
+    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=True).root_path
     >>> import requests.exceptions
     >>> with pytest.raises(requests.exceptions.SSLError):
     ...     path.read_text()
 
-    >>> path = file_assets.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=False).root_path
+    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=False).root_path
     >>> "expired.<br>badssl.com" in path.read_text()
     True
 
 You can also specify an optional username and password for basic authentication.
 Later on, we will add other authentication providers, like certificate or (Authroization) header.
 
-    >>> path = file_assets.hosts.http.HttpsHost("nu.nl", auth=file_assets.auth.UsernamePassword("name", "secret")) / "robots.txt"
+    >>> path = file_reader.hosts.http.HttpsHost("nu.nl", auth=file_reader.auth.UsernamePassword("name", "secret")) / "robots.txt"
 
 
 ### FTP(S)
 
 You can access ftp(s) sites:
 
-    >>> path = file_assets.hosts.ftp.FTPHost("ftp.nluug.nl") / "pub" / "os" / "Linux" / "distr" / "ubuntu-releases" / "FOOTER.html"
+    >>> path = file_reader.hosts.ftp.FTPHost("ftp.nluug.nl") / "pub" / "os" / "Linux" / "distr" / "ubuntu-releases" / "FOOTER.html"
     >>> "</div></body></html>" in path.read_text()
     True
 
-    >>> path = file_assets.hosts.ftp.FTPHost("test.rebex.net", auth=file_assets.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
+    >>> path = file_reader.hosts.ftp.FTPHost("test.rebex.net", auth=file_reader.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
     >>> "Welcome" in path.read_text()
     True
 
-    >>> path = file_assets.hosts.ftp.FTPSHost("test.rebex.net", port=990, auth=file_assets.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
+    >>> path = file_reader.hosts.ftp.FTPSHost("test.rebex.net", port=990, auth=file_reader.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
     >>> "Welcome" in path.read_text()
     True
 
 
 ### SFTP
 
-    >>> path = file_assets.hosts.sftp.SFTPHost("test.rebex.net", auth=file_assets.auth.UsernamePassword("demo", "password"), auto_add_host_key=True) / "pub" / "example" / "readme.txt"
+    >>> if file_reader.hosts.sftp.SSH_ACTIVATED:
+    ...     path = file_reader.hosts.sftp.SFTPHost("test.rebex.net", auth=file_reader.auth.UsernamePassword("demo", "password"), auto_add_host_key=True) / "pub" / "example" / "readme.txt"
 
     #>>> "Welcome" in path.read_text()
     #True
 
 
 ### SMB
-
-    >>> path = file_assets.hosts.smb.SmbHost("localhost") / "pub" / "example" / "readme.txt"
+    >>> if file_reader.hosts.smb.SMB_ACTIVATED:
+    ...     path = file_reader.hosts.smb.SmbHost("localhost") / "pub" / "example" / "readme.txt"
 
 ### S3
 
-    >>> path = file_assets.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
+    >>> if file_reader.hosts.s3.S3_ACTIVATED:
+    ...     path = file_reader.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
 
 
 ### HDFS
 
-    >>> path = file_assets.hosts.hdfs.HdfsHost("localhost") / "pub" / "example" / "readme.txt"
+    >>> if file_reader.hosts.hdfs.HDFS_ACTIVATED:
+    ...     path = file_reader.hosts.hdfs.HdfsHost("localhost") / "pub" / "example" / "readme.txt"
 
 
 ### Package
 
 You can load every file within an installed Python Package, whether it is a Python or distributed data file.
 
-    >>> path = file_assets.hosts.package.PythonPackage("file_assets") / "exceptions.py"
-    >>> "class FileNotAccessable(Exception):" in path.read_text()
+    >>> path = file_reader.hosts.package.PythonPackage("file_reader") / "assets" / "test.txt"
+    >>> "test" in path.read_text()
     True
 
+## Archives
+
+Also files in archives can be accessed. Whether you call the archive directly:
+
+    >>> path = file_reader.hosts.package.PythonPackage("file_reader") / "assets" / "test.zip" / "folder" / "file3.txt"
+    >>> "file3" in path.read_text()
+    True
+
+or indirectly via a hash:
 
 
 ## FAQ

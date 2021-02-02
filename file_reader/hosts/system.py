@@ -1,6 +1,7 @@
 import pathlib
+from typing import IO
 
-from file_assets.base import Host, Path, Url
+from file_reader.base import Host, Path, Url
 
 
 class SystemHost(Host):
@@ -14,30 +15,15 @@ class SystemHost(Host):
 
 
     >>> p = SystemHost() / "pyproject.toml"
-    >>> with p.open('t') as f:
-    ...     f.read(4)
-    ...     f.tell()
-    ...     f.seek(0)
-    ...     f.tell()
-    ...     f.read(4)
-    '[too'
-    4
-    0
-    '[too'
+    >>> p.read_text()[:10]
+    '[tool.poet'
+    >>> p.read_bytes()[:10]
+    b'[tool.poet'
 
-    >>> with p.open('b') as f:
-    ...     first_read = f.read(4)
-    ...     second_read = f.read(1)
-    >>> isinstance(first_read, bytes)
-    True
-    >>> first_read == b"[too"
-    True
-    >>> second_read == b"l"
-    True
 
     """
 
-    scheme = "file"
+    _scheme = "file"
 
     def __init__(self, home_dir=False, root=False):
         self.cwd = pathlib.Path(".")
@@ -57,7 +43,7 @@ class SystemHost(Host):
 
         return current_path
 
-    def _open(self, path: "Path"):
+    def _open(self, path: "Path") -> IO[bytes]:
         return self._get_path(path).open("rb")
 
     def __repr__(self) -> str:

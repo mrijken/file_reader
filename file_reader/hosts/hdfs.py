@@ -1,5 +1,5 @@
 import socket
-from typing import Optional
+from typing import IO, Optional
 
 try:
     import pyarrow.hdfs
@@ -8,13 +8,13 @@ try:
 except ImportError:
     HDFS_ACTIVATED = False
 
-from file_assets import exceptions
-from file_assets.auth import UsernamePassword
-from file_assets.base import Host, Path, Url
+from file_reader import exceptions
+from file_reader.auth import UsernamePassword
+from file_reader.base import Host, Path, Url
 
 
 class HdfsHost(Host):
-    scheme = "hdfs"
+    _scheme = "hdfs"
 
     def __init__(
         self,
@@ -33,7 +33,7 @@ class HdfsHost(Host):
     def connect(self):
         self.connection = pyarrow.hdfs.connect(self.hostname)
 
-    def _open(self, path: Path):
+    def _open(self, path: Path) -> IO[bytes]:
         if not self.connection:
             self.connect()
 

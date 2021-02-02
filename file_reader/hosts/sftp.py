@@ -1,5 +1,5 @@
 import socket
-from typing import Optional
+from typing import IO, Optional
 
 try:
     import paramiko
@@ -8,13 +8,13 @@ try:
 except ImportError:
     SSH_ACTIVATED = False
 
-from file_assets import exceptions
-from file_assets.auth import UsernamePassword
-from file_assets.base import Host, Path, Url
+from file_reader import exceptions
+from file_reader.auth import UsernamePassword
+from file_reader.base import Host, Path, Url
 
 
 class SFTPHost(Host):
-    scheme = "sftp"
+    _scheme = "sftp"
 
     def __init__(
         self,
@@ -55,7 +55,7 @@ class SFTPHost(Host):
             raise exceptions.NoHostConnection from exc
         self.sftp_client = self.ssh_client.open_sftp()
 
-    def _open(self, path: Path):
+    def _open(self, path: Path) -> IO[bytes]:
         if not self.sftp_client:
             self.connect()
 
