@@ -175,6 +175,9 @@ class Host(abc.ABC):
         if not other.startswith("/"):
             other = "/" + other
         return Path(self, other.split("/"))
+    
+    def get_path(self, path: str) -> Path:
+        return Path(self, path.split("/"))
 
     @property
     def root_path(self) -> Path:
