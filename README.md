@@ -1,5 +1,7 @@
 # file_reader
 
+![CI](https://github.com/mrijken/file_reader/workflows/CI/badge.svg)
+
 ## Read almost all files from almost anywhere with one API
 
 Uniform file reader for a lot of different file storages, like
