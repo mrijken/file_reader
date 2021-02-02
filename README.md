@@ -19,12 +19,22 @@ Import dependencies for doctest
 
 ## Usage
 
-
 ### Construct a Host and a Path
 
-    >>> path = file_reader.hosts.ftp.FTPHost('ftp.nluug.nl') / 'pub' / 'os' / 'Linux' / 'distr' / 'ubuntu-releases' / 'FOOTER.html'
+To read a file, you have to instantiate a host (like FTPHost) and get a path from it
+
+    >>> host = file_reader.hosts.ftp.FTPHost('ftp.nluug.nl')
+    >>> path = host / 'pub' / 'os' / 'Linux' / 'distr' / 'ubuntu-releases' / 'FOOTER.html'
+    
+    or
+
+    >>> path = host.get_path("pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+
     >>> path
     Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+
+You can use that path to read the contents.
+
 
 ### Accces the conents like a file
 
@@ -51,16 +61,10 @@ Read the content direct from the path as text:
     >>> path.read_text()
     '\n</div></body></html>\n'
 
-    >>> path.read_text()[:3]
-    '\n</'
-
 or as binary:
 
     >>> path.read_bytes()
     b'\n</div></body></html>\n'
-
-    >>> path.read_bytes()[:3]
-    b'\n</'
 
 ### Create a Path from an url
 
@@ -186,13 +190,19 @@ You can load every file within an installed Python Package, whether it is a Pyth
 
 ## Archives
 
-Also files in archives can be accessed. Whether you call the archive directly:
+Also files in archives can be accessed.
 
     >>> path = file_reader.hosts.package.PythonPackage("file_reader") / "assets" / "test.zip" / "folder" / "file3.txt"
     >>> "file3" in path.read_text()
     True
+    
+When a path element has one of the known archive extensions, it will be read as an archive:
 
-or indirectly via a hash:
+- .tar (tar)
+- .tgz (tar)
+- .tar.gz (tar)
+- .zip (zip)
+- .dep (zip)
 
 
 ## FAQ
