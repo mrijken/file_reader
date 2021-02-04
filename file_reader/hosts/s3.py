@@ -20,6 +20,14 @@ class S3Host(Host):
         self.aws_secret_access_key = aws_secret_access_key
         self.region_name = region_name
 
+    def __repr__(self) -> str:
+        return f"S3Host({self.aws_access_key_id}@{self.region_name})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.aws_access_key_id == other.aws_access_key_id and self.region_name == other.region_name
+
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         raise NotImplemented

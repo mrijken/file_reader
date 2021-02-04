@@ -19,6 +19,7 @@ class SFTPHost(Host):
     def __init__(
         self,
         hostname: str,
+        port: int = 22,
         auth: Optional[UsernamePassword] = None,
         auto_add_host_key=False,
     ):
@@ -26,14 +27,23 @@ class SFTPHost(Host):
             raise ValueError("SFTP is not available. Install met extras sftp.")
 
         self.hostname = hostname
+        self.port = port
         self.auth = auth
         self.auto_add_host_key = auto_add_host_key
         self.ssh_client: Optional[paramiko.SSHClient] = None
         self.sftp_client: Optional[paramiko.SFTPClient] = None
 
+    def __repr__(self) -> str:
+        return f"SFTPHost({self.hostname}:{self.port})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.hostname == other.hostname and self.port == other.port
+
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.hostname, auth=parsed_url.auth) / parsed_url.path
+        return cls(parsed_url.hostname, port=parsed_url.port or 22, auth=parsed_url.auth) / parsed_url.path
 
     def connect(self):
         self.ssh_client = paramiko.SSHClient()

@@ -25,13 +25,13 @@ To read a file, you have to instantiate a host (like FTPHost) and get a path fro
 
     >>> host = file_reader.hosts.ftp.FTPHost('ftp.nluug.nl')
     >>> path = host / 'pub' / 'os' / 'Linux' / 'distr' / 'ubuntu-releases' / 'FOOTER.html'
-    
+
     or
 
-    >>> path = host.get_path("/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+    >>> path = host.get_path("pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
 
     >>> path
-    Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+    Path(FTPHost(ftp.nluug.nl:21)/pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
 
 You can use that path to read the contents.
 
@@ -71,13 +71,13 @@ or as binary:
 You can construct a Host and Path by parsing an url, like:
 
     >>> file_reader.base.Host.from_url("ftp://marc:secret@ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
-    Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+    Path(FTPHost(ftp.nluug.nl:21)/pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
 
     >>> file_reader.base.Host.from_url("http://marc:secret@nu.nl/robots.txt")
-    Path(Host(http), /robots.txt)
+    Path(HttpHost(nu.nl:80)/robots.txt)
 
     >>> file_reader.base.Host.from_url("package://file_reader/__init__.py")
-    Path(Host(package), /__init__.py)
+    Path(Package(file_reader)/__init__.py)
 
 ## Possible hosts
 
@@ -91,18 +91,18 @@ It will use the credentials of the user who is running the python process.
 
 You can use a path relative to the working directory
 
-    >>> file_reader.hosts.system.SystemHost() / "file_reader" / "__init__.py"
-    Path(Host(file, cwd=.), /file_reader/__init__.py)
+    >>> file_reader.hosts.local.LocalHost() / "file_reader" / "__init__.py"
+    Path(LocalHost(.)/file_reader/__init__.py)
 
 A path relative to the home dir of the current user can be used
 
-    >>> file_reader.hosts.system.SystemHost(home_dir=True) / ".ssh" / "id_rsa.pub"
-    Path(Host(file, cwd=/home/...), /.ssh/id_rsa.pub)
+    >>> file_reader.hosts.local.LocalHost(home_dir=True) / ".ssh" / "id_rsa.pub"
+    Path(LocalHost(/home/...)/.ssh/id_rsa.pub)
 
 Or an absolute path can be used:
 
-    >>> file_reader.hosts.system.SystemHost(root=True) / "etc" / "hosts"
-    Path(Host(file, cwd=/), /etc/hosts)
+    >>> file_reader.hosts.local.LocalHost(root=True) / "etc" / "hosts"
+    Path(LocalHost(/)/etc/hosts)
 
 
 ### HTTP(S)
@@ -111,13 +111,13 @@ Via the GET method a file from a HTTP(S) location will be get.
 
     >>> path = file_reader.hosts.http.HttpHost("nu.nl") / "robots.txt"
     >>> path
-    Path(Host(http), /robots.txt)
+    Path(HttpHost(nu.nl:80)/robots.txt)
     >>> "User-agent" in path.read_text()
     True
 
     >>> path = file_reader.hosts.http.HttpsHost("nu.nl") / "robots.txt"
     >>> path
-    Path(Host(https), /robots.txt)
+    Path(HttpsHost(nu.nl:443)/robots.txt)
     >>> "User-agent" in path.read_text()
     True
 
@@ -195,7 +195,7 @@ Also files in archives can be accessed.
     >>> path = file_reader.hosts.package.PythonPackage("file_reader") / "assets" / "test.zip" / "folder" / "file3.txt"
     >>> "file3" in path.read_text()
     True
-    
+
 When a path element has one of the known archive extensions, it will be read as an archive:
 
 - .tar (tar)

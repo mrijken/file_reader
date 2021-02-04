@@ -26,6 +26,14 @@ class HdfsHost(Host):
         self.hostname = hostname
         self.connection: Optional[pyarrow.hdfs.HadoopFileSystem] = None
 
+    def __repr__(self) -> str:
+        return f"HdfsHost({self.hostname})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.hostname == other.hostname
+
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         return cls(parsed_url.hostname) / parsed_url.path

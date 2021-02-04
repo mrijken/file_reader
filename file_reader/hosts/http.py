@@ -20,11 +20,19 @@ class HttpHost(Host):
 
     _scheme = "http"
 
-    def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None):
+    def __init__(self, hostname: str, port: int = 80, auth: Optional[UsernamePassword] = None):
         self._hostname = hostname
         self._port = port
         self._auth = auth
         self._verify_ssl = False
+
+    def __repr__(self) -> str:
+        return f"HttpHost({self._hostname}:{self._port})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self._hostname == other._hostname and self._port == other._port
 
     def _get_url(self, path: "Path"):
         return f"{self._scheme}://{self._hostname}{':'+ str(self._port) if self._port else ''}/{'/'.join(path.path_elements)}"
@@ -50,7 +58,7 @@ class HttpHost(Host):
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
+        return cls(parsed_url.hostname, parsed_url.port or 80, auth=parsed_url.auth) / parsed_url.path
 
 
 class HttpsHost(HttpHost):
@@ -66,6 +74,13 @@ class HttpsHost(HttpHost):
 
     _scheme = "https"
 
-    def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None, verify_ssl=True):
+    def __init__(self, hostname: str, port: int = 443, auth: Optional[UsernamePassword] = None, verify_ssl=True):
         super().__init__(hostname, port, auth)
         self._verify_ssl = verify_ssl
+
+    @classmethod
+    def from_parsed_url(cls, parsed_url: Url) -> Path:
+        return cls(parsed_url.hostname, parsed_url.port or 443, auth=parsed_url.auth) / parsed_url.path
+
+    def __repr__(self) -> str:
+        return f"HttpsHost({self._hostname}:{self._port})"

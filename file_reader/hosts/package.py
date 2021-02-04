@@ -22,6 +22,14 @@ class PythonPackage(Host):
     def __init__(self, package_name: str) -> None:
         self.package_name = package_name
 
+    def __repr__(self) -> str:
+        return f"Package({self.package_name})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.package_name == other.package_name
+
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         return cls(parsed_url.hostname) / parsed_url.path

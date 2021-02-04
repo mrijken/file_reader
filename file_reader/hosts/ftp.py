@@ -29,11 +29,19 @@ class FTPHost(Host):
 
     _scheme = "ftp"
 
-    def __init__(self, hostname: str, port: int = None, auth: Optional[UsernamePassword] = None) -> None:
+    def __init__(self, hostname: str, port: int = 21, auth: Optional[UsernamePassword] = None) -> None:
         self.hostname = hostname
         self.port = port
         self.auth = auth
         self.connection: Optional[ftplib.FTP] = None
+
+    def __repr__(self) -> str:
+        return f"FTPHost({self.hostname}:{self.port})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.hostname == other.hostname and self.port == other.port
 
     def connect(self):
         try:
@@ -47,7 +55,7 @@ class FTPHost(Host):
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
-        return cls(parsed_url.hostname, parsed_url.port, auth=parsed_url.auth) / parsed_url.path
+        return cls(parsed_url.hostname, parsed_url.port or 21, auth=parsed_url.auth) / parsed_url.path
 
     def _open(self, path: Path) -> IO[bytes]:
         if not self.connection:
@@ -56,7 +64,7 @@ class FTPHost(Host):
         if not self.connection:
             raise exceptions.NotConnected
 
-        self.connection.cwd("/".join(path.path_elements[:-1]))
+        self.connection.cwd("/" + "/".join(path.path_elements[:-1]))
 
         mem_file = BytesIO()
 
@@ -76,3 +84,13 @@ class FTPHost(Host):
 
 class FTPSHost(FTPHost):
     _scheme = "ftps"
+
+    def __init__(self, hostname: str, port: int = 990, auth: Optional[UsernamePassword] = None) -> None:
+        super().__init__(hostname, port=port, auth=auth)
+
+    @classmethod
+    def from_parsed_url(cls, parsed_url: Url) -> Path:
+        return cls(parsed_url.hostname, parsed_url.port or 990, auth=parsed_url.auth) / parsed_url.path
+
+    def __repr__(self) -> str:
+        return f"FTPSHost({self.hostname}:{self.port})"

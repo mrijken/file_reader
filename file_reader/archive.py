@@ -10,10 +10,12 @@ from file_reader.exceptions import FileNotAccessable
 
 class TarFile(Archive):
     """
-    >>> from file_reader.hosts.system import SystemHost
-    >>> p = SystemHost() / "tests" / "resources" / "archive_content.tar" / "." / "folder" / "file3.txt"
+    >>> from file_reader.hosts.local import LocalHost
+    >>> p = LocalHost() / "tests" / "resources" / "archive_content.tar" / "." / "folder" / "file3.txt"
+
     >>> repr(p)
-    'Path(Archive(/tests/resources/archive_content.tar), ./folder/file3.txt)'
+    'Path(Archive(tests/resources/archive_content.tar)/./folder/file3.txt)'
+
     >>> p.read_bytes() == b"file3"
     True
     >>> p.read_text() == "file3"
@@ -34,10 +36,10 @@ class TarFile(Archive):
 
 class ZipFile(Archive):
     """
-    >>> from file_reader.hosts.system import SystemHost
-    >>> p = SystemHost() / "tests" / "resources" / "archive_content.zip" / "folder" / "file3.txt"
+    >>> from file_reader.hosts.local import LocalHost
+    >>> p = LocalHost() / "tests" / "resources" / "archive_content.zip" / "folder" / "file3.txt"
     >>> repr(p)
-    'Path(Archive(/tests/resources/archive_content.zip), folder/file3.txt)'
+    'Path(Archive(tests/resources/archive_content.zip)/folder/file3.txt)'
 
     >>> p.read_bytes() == b"file3"
     True

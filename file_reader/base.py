@@ -2,7 +2,7 @@ import abc
 import dataclasses
 import importlib
 from io import BytesIO, StringIO
-from typing import Dict, IO, Iterable, List, Optional, Tuple, Type, TypeVar, Union, overload, Protocol
+from typing import Dict, IO, Iterable, List, Optional, Tuple, Type, Union, overload
 
 from typing_extensions import Literal
 from urllib3.util import parse_url
@@ -38,6 +38,11 @@ class Archive:
 
     def __init__(self, path: "Path"):
         self._path = path
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self._path == other._path
 
     def __truediv__(self, other: str) -> "Path":
         if not other.startswith("/"):
@@ -112,15 +117,56 @@ class Path:
     def __repr__(self) -> str:
         """
         >>> repr(Path("host") / "root" / "child")
-        'Path(host, root/child)'
+        'Path(host/root/child)'
         """
-        return f"Path({self._root}, {str(self)})"
+        return f"Path({self._root}/{str(self)})"
 
     def read_text(self) -> str:
         return self._root.read_text(self)
 
     def read_bytes(self) -> bytes:
         return self._root.read_bytes(self)
+
+    def has_extension(self, extension: str) -> bool:
+        if not self._path_elements:
+            return False
+
+        return self._path_elements[-1].endswith(extension)
+
+    @property
+    def is_root(self) -> bool:
+        """returns True when the path is at the root of the host
+
+        >>> path = Path("host") / "test" / "child"
+        >>> path.is_root
+        False
+        >>> path = Path("host")
+        >>> path.is_root
+        True
+        """
+        return len(self._path_elements) == 0
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        if self._root != other._root:
+            return False
+        return self.path_elements == other.path_elements
+
+    @property
+    def parent(self) -> "Path":
+        """Returns the parent Path.
+
+        >>> path = Path("host") / "test" / "child"
+        >>> path
+        Path(host/test/child)
+        >>> path.parent
+        Path(host/test)
+
+        >>> path.parent.parent
+        Path(host/)
+        """
+        return self.__class__(self._root, self._path_elements[:-1] if not self.is_root else ())
 
     @overload
     def open(self, mode: Literal["b"]) -> BytesIO:
@@ -146,25 +192,31 @@ class Host(abc.ABC):
         cls._subclasses.append(cls)
 
     @classmethod
+    def _load_plugins(cls):
+        importlib.import_module("file_reader.hosts")
+
+    @classmethod
     def from_url(cls, url_str: str) -> Path:
         """
         >>> Host.from_url("ftp://ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
-        Path(Host(ftp), /pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+        Path(FTPHost(ftp.nluug.nl:21)/pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
         """
         parsed_url = parse_url(url_str)
         auth = None
         if parsed_url.auth:
             auth = UsernamePassword(*parsed_url.auth.split(":"))
+
         url = Url(
             parsed_url.scheme,
             auth,
             parsed_url.hostname,
             parsed_url.port,
-            parsed_url.path,
+            parsed_url.path if not parsed_url.path.startswith("/") else parsed_url.path[1:],
             parsed_url.query,
             parsed_url.fragment,
         )
 
+        cls._load_plugins()
         for host_cls in cls._subclasses:
             if parsed_url.scheme == host_cls._scheme:
                 return host_cls.from_parsed_url(url)
@@ -176,17 +228,15 @@ class Host(abc.ABC):
     def from_parsed_url(cls: Type["Host"], parsed_url: Url) -> "Path":
         ...
 
-    def __truediv__(self, other: str) -> Path:
-        if not other.startswith("/"):
-            other = "/" + other
-        return Path(self, other.split("/"))
-    
-    def get_path(self, path: str) -> Path:
-        return Path(self, path.split("/"))
-
     @property
     def root_path(self) -> Path:
         return Path(self, [])
+
+    def __truediv__(self, other: str) -> Path:
+        return Path(self, other.split("/"))
+
+    def get_path(self, path: str) -> Path:
+        return Path(self, path.split("/"))
 
     def __repr__(self) -> str:
         return f"Host({self._scheme})"
@@ -200,3 +250,7 @@ class Host(abc.ABC):
     def read_bytes(self, path: Path) -> bytes:
         with self._open(path) as f:
             return f.read()
+
+    @abc.abstractmethod
+    def __eq__(self, other) -> bool:
+        ...

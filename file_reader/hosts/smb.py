@@ -21,6 +21,14 @@ class SmbHost(Host):
         self.hostname = hostname
         self.auth = auth
 
+    def __repr__(self) -> str:
+        return f"SmbHost({self.hostname})"
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.hostname == other.hostname
+
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
         return cls(parsed_url.hostname, auth=parsed_url.auth) / parsed_url.path

@@ -1,20 +1,20 @@
 import pathlib
-from typing import IO
+from typing import IO, Optional, Union
 
 from file_reader.base import Host, Path, Url
 
 
-class SystemHost(Host):
+class LocalHost(Host):
     """
-    >>> host = SystemHost()
+    >>> host = LocalHost()
     >>> p = host / "home"
     >>> p
-    Path(Host(file, cwd=.), /home)
+    Path(LocalHost(.)/home)
     >>> host / "home" / "user" / "file.txt"
-    Path(Host(file, cwd=.), /home/user/file.txt)
+    Path(LocalHost(.)/home/user/file.txt)
 
 
-    >>> p = SystemHost() / "pyproject.toml"
+    >>> p = LocalHost() / "pyproject.toml"
     >>> p.read_text()[:10]
     '[tool.poet'
     >>> p.read_bytes()[:10]
@@ -25,12 +25,20 @@ class SystemHost(Host):
 
     _scheme = "file"
 
-    def __init__(self, home_dir=False, root=False):
-        self.cwd = pathlib.Path(".")
+    def __init__(self, cwd: Optional[Union[pathlib.Path, str]] = None, home_dir=False, root=False):
+        if cwd is not None:
+            self.cwd = pathlib.Path(cwd) if isinstance(cwd, str) else cwd
         if home_dir:
             self.cwd = pathlib.Path("~").expanduser()
         elif root:
             self.cwd = pathlib.Path("/")
+        else:
+            self.cwd = pathlib.Path(".")
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+        return self.cwd == other.cwd
 
     @classmethod
     def from_parsed_url(cls, parsed_url: Url) -> Path:
@@ -47,4 +55,4 @@ class SystemHost(Host):
         return self._get_path(path).open("rb")
 
     def __repr__(self) -> str:
-        return f"Host(file, cwd={self.cwd})"
+        return f"LocalHost({self.cwd})"
