@@ -14,6 +14,14 @@ from file_reader.base import Host, Path, Url
 
 
 class SFTPHost(Host):
+    r"""
+
+    >>> p = SFTPHost.from_url("sftp://demo:demo@demo.wftpserver.com:2222/download/Winter.jpg")
+    >>> p.host.auto_add_host_key = True
+    >>> len(p.read_bytes())
+    664950
+    """
+
     _scheme = "sftp"
 
     def __init__(
@@ -53,6 +61,7 @@ class SFTPHost(Host):
         try:
             self.ssh_client.connect(
                 hostname=self.hostname,
+                port=self.port,
                 username=self.auth.username if self.auth else None,
                 password=self.auth.password if self.auth else None,  # pkey=pkey, key_filename=key_filename
             )
@@ -63,6 +72,7 @@ class SFTPHost(Host):
             socket.error,
         ) as exc:
             raise exceptions.NoHostConnection from exc
+
         self.sftp_client = self.ssh_client.open_sftp()
 
     def _open(self, path: Path) -> IO[bytes]:

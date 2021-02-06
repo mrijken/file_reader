@@ -170,8 +170,8 @@ You can access ftp(s) sites:
 
 ### S3
 
-    >>> if file_reader.hosts.s3.S3_ACTIVATED:
-    ...     path = file_reader.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
+    #>>> if file_reader.hosts.s3.S3_ACTIVATED:
+    #...     path = file_reader.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
 
 
 ### HDFS

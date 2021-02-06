@@ -68,9 +68,13 @@ class Archive:
 
 
 class Path:
-    def __init__(self, root: Union["Host", "Archive"], path_elements: Iterable[str] = None) -> None:
-        self._root = root
+    def __init__(self, host: Union["Host", "Archive"], path_elements: Iterable[str] = None) -> None:
+        self._host = host
         self._path_elements: Tuple[str, ...] = tuple(path_elements) if path_elements else tuple()
+
+    @property
+    def host(self):
+        return self._host
 
     @property
     def path_elements(self) -> Tuple[str, ...]:
@@ -105,7 +109,7 @@ class Path:
         True
 
         """
-        path = self.__class__(self._root, self.path_elements + (other,))
+        path = self.__class__(self._host, self.path_elements + (other,))
 
         if "." in other:
             self._load_plugins()
@@ -119,13 +123,13 @@ class Path:
         >>> repr(Path("host") / "root" / "child")
         'Path(host/root/child)'
         """
-        return f"Path({self._root}/{str(self)})"
+        return f"Path({self._host}/{str(self)})"
 
     def read_text(self) -> str:
-        return self._root.read_text(self)
+        return self._host.read_text(self)
 
     def read_bytes(self) -> bytes:
-        return self._root.read_bytes(self)
+        return self._host.read_bytes(self)
 
     def has_extension(self, extension: str) -> bool:
         if not self._path_elements:
@@ -134,14 +138,14 @@ class Path:
         return self._path_elements[-1].endswith(extension)
 
     @property
-    def is_root(self) -> bool:
+    def is_host(self) -> bool:
         """returns True when the path is at the root of the host
 
         >>> path = Path("host") / "test" / "child"
-        >>> path.is_root
+        >>> path.is_host
         False
         >>> path = Path("host")
-        >>> path.is_root
+        >>> path.is_host
         True
         """
         return len(self._path_elements) == 0
@@ -149,7 +153,7 @@ class Path:
     def __eq__(self, other) -> bool:
         if not isinstance(other, type(self)):
             return False
-        if self._root != other._root:
+        if self._host != other._host:
             return False
         return self.path_elements == other.path_elements
 
@@ -166,7 +170,7 @@ class Path:
         >>> path.parent.parent
         Path(host/)
         """
-        return self.__class__(self._root, self._path_elements[:-1] if not self.is_root else ())
+        return self.__class__(self._host, self._path_elements[:-1] if not self.is_host else ())
 
     @overload
     def open(self, mode: Literal["b"]) -> BytesIO:

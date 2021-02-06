@@ -9,10 +9,10 @@ from file_reader.base import Host, Path, Url
 
 
 class FTPHost(Host):
-    """
+    r"""
     >>> import pytest
 
-    >>> p = FTPHost.from_url("ftp://ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+    >>> p = FTPHost.from_url("ftps://ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
     >>> "</div></body></html>" in p.read_text()
     True
     >>> b"</div></body></html>" in p.read_bytes()
@@ -25,6 +25,10 @@ class FTPHost(Host):
     >>> p = FTPHost.from_url("ftp://ftp.wrong_host.nl/readme")
     >>> with pytest.raises(exceptions.NoHostConnection):
     ...     p.read_text()
+
+    >>> p = FTPHost.from_url("ftp://demo:password@test.rebex.net/pub/example/readme.txt")
+    >>> 'Welcome,\r\n\r\nyou are connected using' in p.read_text()
+    True
     """
 
     _scheme = "ftp"
@@ -83,6 +87,12 @@ class FTPHost(Host):
 
 
 class FTPSHost(FTPHost):
+    r"""
+    >>> p = FTPSHost.from_url("ftps://demo:password@test.rebex.net/pub/example/readme.txt")
+    >>> 'Welcome,\r\n\r\nyou are connected using' in p.read_text()
+    True
+    """
+
     _scheme = "ftps"
 
     def __init__(self, hostname: str, port: int = 990, auth: Optional[UsernamePassword] = None) -> None:

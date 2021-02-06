@@ -28,7 +28,7 @@ class LocalHost(Host):
     def __init__(self, cwd: Optional[Union[pathlib.Path, str]] = None, home_dir=False, root=False):
         if cwd is not None:
             self.cwd = pathlib.Path(cwd) if isinstance(cwd, str) else cwd
-        if home_dir:
+        elif home_dir:
             self.cwd = pathlib.Path("~").expanduser()
         elif root:
             self.cwd = pathlib.Path("/")
