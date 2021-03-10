@@ -1,8 +1,10 @@
 [tool.poetry]
 name = "file_reader"
 version = "0.1.0"
-description = ""
+description = "A tool for reading file from different sources with a single interface"
 authors = ["Marc Rijken <marc@rijken.org>"]
+license = "MIT"
+repository = "https://github.com/mrijken/file_reader"
 
 [tool.poetry.dependencies]
 python = ">=3.6,<4.0"
@@ -22,7 +24,7 @@ isort = "^5.6.4"
 
 [tool.poetry.extras]
 s3 = ["boto3"]
-samba = ["smbprotocol"]
+smb = ["smbprotocol"]
 sftp = ["paramiko"]
 ssh = ["paramiko"]
 hdfs = ["pyarrow"]

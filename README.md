@@ -15,6 +15,7 @@ Uniform file reader for a lot of different file storages, like
 Import dependencies for doctest
 
     >>> import file_reader
+    >>> import file_reader.hosts
     >>> import pytest
 
 ## Usage
@@ -112,9 +113,12 @@ Via the GET method a file from a HTTP(S) location will be get.
     >>> path = file_reader.hosts.http.HttpHost("nu.nl") / "robots.txt"
     >>> path
     Path(HttpHost(nu.nl:80)/robots.txt)
+
+    >>> file_reader.base.Host.from_url("http://nu.nl/robots.txt")
+    Path(HttpHost(nu.nl:80)/robots.txt)
+
     >>> "User-agent" in path.read_text()
     True
-
     >>> path = file_reader.hosts.http.HttpsHost("nu.nl") / "robots.txt"
     >>> path
     Path(HttpsHost(nu.nl:443)/robots.txt)
@@ -123,12 +127,12 @@ Via the GET method a file from a HTTP(S) location will be get.
 
 The ssl certificate of sites will be checked unless you disable it.
 
-    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=True).root_path
+    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=True)
     >>> import requests.exceptions
     >>> with pytest.raises(requests.exceptions.SSLError):
     ...     path.read_text()
 
-    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=False).root_path
+    >>> path = file_reader.hosts.http.HttpsHost("expired.badssl.com", verify_ssl=False)
     >>> "expired.<br>badssl.com" in path.read_text()
     True
 
@@ -143,6 +147,12 @@ Later on, we will add other authentication providers, like certificate or (Authr
 You can access ftp(s) sites:
 
     >>> path = file_reader.hosts.ftp.FTPHost("ftp.nluug.nl") / "pub" / "os" / "Linux" / "distr" / "ubuntu-releases" / "FOOTER.html"
+    >>> path
+    Path(FTPHost(ftp.nluug.nl:21)/pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+
+    >>> file_reader.base.Host.from_url("ftp://ftp.nluug.nl/pub/os/Linux/distr/ubuntu-releases/FOOTER.html")
+    Path(FTPHost(ftp.nluug.nl:21)/pub/os/Linux/distr/ubuntu-releases/FOOTER.html)
+
     >>> "</div></body></html>" in path.read_text()
     True
 
@@ -151,33 +161,57 @@ You can access ftp(s) sites:
     True
 
     >>> path = file_reader.hosts.ftp.FTPSHost("test.rebex.net", port=990, auth=file_reader.auth.UsernamePassword("demo", "password")) / "pub" / "example" / "readme.txt"
+    >>> path
+    Path(FTPSHost(test.rebex.net:990)/pub/example/readme.txt)
+
+    >>> file_reader.base.Host.from_url("ftps://test.rebex.net:990/pub/example/readme.txt")
+    Path(FTPSHost(test.rebex.net:990)/pub/example/readme.txt)
+
     >>> "Welcome" in path.read_text()
     True
 
 
 ### SFTP
 
-    >>> if file_reader.hosts.sftp.SSH_ACTIVATED:
-    ...     path = file_reader.hosts.sftp.SFTPHost("test.rebex.net", auth=file_reader.auth.UsernamePassword("demo", "password"), auto_add_host_key=True) / "pub" / "example" / "readme.txt"
+    Note: Install with `pip install file_reader[ssh] to actually use SFTP
 
-    #>>> "Welcome" in path.read_text()
-    #True
+    >>> file_reader.hosts.sftp.SFTPHost("test.rebex.net", auth=file_reader.auth.UsernamePassword("demo", "password"), auto_add_host_key=True) / "pub" / "example" / "readme.txt"
+    Path(SFTPHost(test.rebex.net:22)/pub/example/readme.txt)
+
+    >>> file_reader.base.Host.from_url("sftp://test.rebex.net/pub/example/readme.txt")
+    Path(SFTPHost(test.rebex.net:22)/pub/example/readme.txt)
 
 
 ### SMB
-    >>> if file_reader.hosts.smb.SMB_ACTIVATED:
-    ...     path = file_reader.hosts.smb.SmbHost("localhost") / "pub" / "example" / "readme.txt"
+
+    Note: Install with `pip install file_reader[smb] to actually use SMB
+
+    >>> file_reader.hosts.smb.SmbHost("server") / "share" / "folder" / "readme.txt"
+    Path(SmbHost(server)/share/folder/readme.txt)
+
+    >>> file_reader.base.Host.from_url("smb://server/share/folder/readme.txt")
+    Path(SmbHost(server)/share/folder/readme.txt)
+
 
 ### S3
 
-    #>>> if file_reader.hosts.s3.S3_ACTIVATED:
-    #...     path = file_reader.hosts.s3.S3Host("access_key", "secret", "region") / "pub" / "example" / "readme.txt"
+    Note: Install with `pip install file_reader[s3] to actually use S3
 
+    >>> file_reader.hosts.s3.S3Host("filereaderpublic") / "test_folder" / "test_folder_2" / "test.txt"
+    Path(S3Host(filereaderpublic)/test_folder/test_folder_2/test.txt)
+
+    >>> file_reader.base.Host.from_url("s3://filereaderpublic/test_folder/test_folder_2/test.txt")
+    Path(S3Host(filereaderpublic)/test_folder/test_folder_2/test.txt)
 
 ### HDFS
 
-    >>> if file_reader.hosts.hdfs.HDFS_ACTIVATED:
-    ...     path = file_reader.hosts.hdfs.HdfsHost("localhost") / "pub" / "example" / "readme.txt"
+    Note: Install with `pip install file_reader[hdfs] to actually use HDFS
+
+    >>> file_reader.hosts.hdfs.HdfsHost("localhost") / "pub" / "example" / "readme.txt"
+    Path(HdfsHost(localhost)/pub/example/readme.txt)
+
+    >>> file_reader.base.Host.from_url("hdfs://localhost/pub/example/readme.txt")
+    Path(HdfsHost(localhost)/pub/example/readme.txt)
 
 
 ### Package

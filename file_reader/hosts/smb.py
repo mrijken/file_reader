@@ -1,3 +1,7 @@
+import logging
+from io import BytesIO
+from typing import IO, Optional
+
 try:
     import smbclient
 
@@ -5,10 +9,11 @@ try:
 except ImportError:
     SMB_ACTIVATED = False
 
-from typing import IO, Optional
 
 from file_reader.auth import UsernamePassword
 from file_reader.base import Host, Path, Url
+
+logger = logging.getLogger(__name__)
 
 
 class SmbHost(Host):
@@ -16,7 +21,7 @@ class SmbHost(Host):
 
     def __init__(self, hostname: str, auth: Optional[UsernamePassword] = None):
         if not SMB_ACTIVATED:
-            raise ValueError("Samba is not available. Install met extras samba.")
+            logging.warning("Samba is not available. Install with `pip install file_reader[smb]`")
 
         self.hostname = hostname
         self.auth = auth
@@ -34,7 +39,17 @@ class SmbHost(Host):
         return cls(parsed_url.hostname, auth=parsed_url.auth) / parsed_url.path
 
     def connect(self):
+        if not SMB_ACTIVATED:
+            raise ValueError("Samba is not available. Install with `pip install file_reader[smb]`")
+
         smbclient.ClientConfig(username=self.auth.username, password=self.auth.password)
 
     def _open(self, path: Path) -> IO[bytes]:
-        return smbclient.open_file("\\\\\\" + self.hostname + str(path).replace("/", "\\\\"), mode="w")
+        self.connect()
+
+        bytes_io = BytesIO()
+        with smbclient.open_file("\\\\" + self.hostname + "\\" + str(path).replace("/", "\\"), mode="rb") as f:
+            bytes_io.write(f.read())
+            bytes_io.seek(0)
+
+        return bytes_io

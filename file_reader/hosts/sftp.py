@@ -1,3 +1,4 @@
+import logging
 import socket
 from typing import IO, Optional
 
@@ -12,14 +13,15 @@ from file_reader import exceptions
 from file_reader.auth import UsernamePassword
 from file_reader.base import Host, Path, Url
 
+logger = logging.getLogger(__name__)
+
 
 class SFTPHost(Host):
     r"""
 
-    >>> p = SFTPHost.from_url("sftp://demo:demo@demo.wftpserver.com:2222/download/Winter.jpg")
-    >>> p.host.auto_add_host_key = True
-    >>> len(p.read_bytes())
-    664950
+    >>> SFTPHost.from_url("sftp://demo:demo@demo.wftpserver.com:2222/download/Winter.jpg")
+    Path(SFTPHost(demo.wftpserver.com:2222)/download/Winter.jpg)
+
     """
 
     _scheme = "sftp"
@@ -32,7 +34,7 @@ class SFTPHost(Host):
         auto_add_host_key=False,
     ):
         if not SSH_ACTIVATED:
-            raise ValueError("SFTP is not available. Install met extras sftp.")
+            logger.warning("SFTP is not available. Install with `pip install file_reader[sftp]`.")
 
         self.hostname = hostname
         self.port = port
@@ -54,6 +56,9 @@ class SFTPHost(Host):
         return cls(parsed_url.hostname, port=parsed_url.port or 22, auth=parsed_url.auth) / parsed_url.path
 
     def connect(self):
+        if not SSH_ACTIVATED:
+            raise ValueError("SFTP is not available. Install with `pip install file_reader[sftp]`.")
+
         self.ssh_client = paramiko.SSHClient()
         if self.auto_add_host_key:
             self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())

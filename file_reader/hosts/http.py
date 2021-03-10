@@ -37,10 +37,16 @@ class HttpHost(Host):
     def _get_url(self, path: "Path"):
         return f"{self._scheme}://{self._hostname}{':'+ str(self._port) if self._port else ''}/{'/'.join(path.path_elements)}"
 
-    def read_text(self, path: Path) -> str:
+    def read_text(self, path: Optional["Path"] = None) -> str:
+        if path is None:
+            path = self.root_path
+
         return self._get_response(path).text
 
-    def read_bytes(self, path: Path) -> bytes:
+    def read_bytes(self, path: Optional["Path"] = None) -> bytes:
+        if path is None:
+            path = self.root_path
+
         return self._get_response(path).content
 
     def _get_response(self, path: "Path"):

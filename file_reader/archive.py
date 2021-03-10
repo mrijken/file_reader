@@ -1,8 +1,7 @@
-from io import BytesIO
 import tarfile
-from typing import IO
 import zipfile
-
+from io import BytesIO
+from typing import IO
 
 from file_reader.base import Archive, Path
 from file_reader.exceptions import FileNotAccessable

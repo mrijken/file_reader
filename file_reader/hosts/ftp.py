@@ -1,7 +1,7 @@
 import ftplib
 import socket
 from io import BytesIO
-from typing import Any, Dict, IO, Optional
+from typing import IO, Any, Dict, Optional
 
 from file_reader import exceptions
 from file_reader.auth import UsernamePassword

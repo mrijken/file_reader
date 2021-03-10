@@ -1,4 +1,5 @@
-import socket
+import logging
+from io import BytesIO
 from typing import IO, Optional
 
 try:
@@ -12,6 +13,8 @@ from file_reader import exceptions
 from file_reader.auth import UsernamePassword
 from file_reader.base import Host, Path, Url
 
+logger = logging.getLogger(__name__)
+
 
 class HdfsHost(Host):
     _scheme = "hdfs"
@@ -21,7 +24,7 @@ class HdfsHost(Host):
         hostname: str,
     ):
         if not HDFS_ACTIVATED:
-            raise ValueError("HDFS is not available. Install met extras hdfs.")
+            logger.warning("HDFS is not available. Install with `pip install file_reader[hdfs]`.")
 
         self.hostname = hostname
         self.connection: Optional[pyarrow.hdfs.HadoopFileSystem] = None
@@ -39,6 +42,9 @@ class HdfsHost(Host):
         return cls(parsed_url.hostname) / parsed_url.path
 
     def connect(self):
+        if not HDFS_ACTIVATED:
+            raise ValueError("HDFS is not available. Install with `pip install file_reader[hdfs]`.")
+
         self.connection = pyarrow.hdfs.connect(self.hostname)
 
     def _open(self, path: Path) -> IO[bytes]:
@@ -48,7 +54,12 @@ class HdfsHost(Host):
         if not self.connection:
             raise exceptions.NotConnected
 
-        return self.connection.open("/".join(path.path_elements), mode="rb")
+        bytes_io = BytesIO()
+        with self.connection.open("/".join(path.path_elements), mode="rb") as f:
+            bytes_io.write(f.read())
+            bytes_io.seek(0)
+
+        return bytes_io
 
     def __del__(self):
         pass

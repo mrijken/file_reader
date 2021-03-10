@@ -2,7 +2,7 @@ import abc
 import dataclasses
 import importlib
 from io import BytesIO, StringIO
-from typing import Dict, IO, Iterable, List, Optional, Tuple, Type, Union, overload
+from typing import IO, Dict, Iterable, List, Optional, Tuple, Type, Union, overload
 
 from typing_extensions import Literal
 from urllib3.util import parse_url
@@ -25,7 +25,7 @@ class Archive:
     _extension_to_cls: Dict[str, Type["Archive"]] = {}
     _extensions: List[str] = []
 
-    def __init_subclass__(cls, **kwargs) -> None:
+    def __init_subclass__(cls, **_) -> None:
         for extension in cls._extensions:
             cls._extension_to_cls[extension] = cls
 
@@ -57,12 +57,18 @@ class Archive:
         return f"Archive({self._path})"
 
     def _open(self, path: "Path") -> IO[bytes]:
-        raise NotImplemented
+        raise NotImplementedError
 
-    def read_text(self, path: "Path") -> str:
+    def read_text(self, path: Optional["Path"] = None) -> str:
+        if path is None:
+            path = self.root_path
+
         return self.read_bytes(path).decode()
 
-    def read_bytes(self, path: "Path") -> bytes:
+    def read_bytes(self, path: Optional["Path"] = None) -> bytes:
+        if path is None:
+            path = self.root_path
+
         with self._open(path) as f:
             return f.read()
 
@@ -192,7 +198,7 @@ class Host(abc.ABC):
 
     _subclasses: List[Type["Host"]] = []
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **_):
         cls._subclasses.append(cls)
 
     @classmethod
@@ -248,10 +254,16 @@ class Host(abc.ABC):
     def _open(self, path: Path) -> IO:
         raise NotImplemented
 
-    def read_text(self, path: Path) -> str:
+    def read_text(self, path: Optional["Path"] = None) -> str:
+        if path is None:
+            path = self.root_path
+
         return self.read_bytes(path).decode()
 
-    def read_bytes(self, path: Path) -> bytes:
+    def read_bytes(self, path: Optional["Path"] = None) -> bytes:
+        if path is None:
+            path = self.root_path
+
         with self._open(path) as f:
             return f.read()
 
