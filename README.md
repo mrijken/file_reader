@@ -1,6 +1,7 @@
 # file_reader
 
 ![Build](https://github.com/mrijken/file_reader/workflows/CI/badge.svg)
+![Hits](https://hitcounter.pythonanywhere.com/count/tag.svg?url=https%3A%2F%2Fgithub.com%2Fmrijken%2Ffile_reader)
 
 ## Read almost all files from almost anywhere with one API
 
