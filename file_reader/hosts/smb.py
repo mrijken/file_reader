@@ -21,7 +21,7 @@ class SmbHost(Host):
 
     def __init__(self, hostname: str, auth: Optional[UsernamePassword] = None):
         if not SMB_ACTIVATED:
-            logging.warning("Samba is not available. Install with `pip install file_reader[smb]`")
+            logger.warning("Samba is not available. Install with `pip install file_reader[smb]`")
 
         self.hostname = hostname
         self.auth = auth
