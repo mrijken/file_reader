@@ -113,9 +113,12 @@ class Path:
         >>> p = p / "child"
         >>> p.path_elements == ("root", "child")
         True
+        >>> p = p / "1/2"
+        >>> p.path_elements == ("root", "child", "1", "2")
+        True
 
         """
-        path = self.__class__(self._host, self.path_elements + (other,))
+        path = self.__class__(self._host, self.path_elements + tuple(other.split("/")))
 
         if "." in other:
             self._load_plugins()

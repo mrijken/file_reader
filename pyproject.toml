@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "file_reader"
-version = "0.1.0"
+version = "0.2.0"
 description = "A tool for reading file from different sources with a single interface"
 authors = ["Marc Rijken <marc@rijken.org>"]
 license = "MIT"
